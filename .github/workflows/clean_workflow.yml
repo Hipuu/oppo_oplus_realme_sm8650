@@ -1,10 +1,10 @@
-name: 清理仓库工作流
+name: Clean Repository Workflow
 
 on:
   workflow_dispatch:
     inputs:
       clean_mode:
-        description: "清理模式(amount--保留数量, date--保留天数)："
+        description: "Cleanup Mode (amount--keep quantity, date--keep days):"
         required: true
         type: choice
         default: 'amount'
@@ -12,7 +12,7 @@ on:
           - 'amount'
           - 'date'
       clean_to_keep:
-        description: "保留最近工作流的天数/数量："
+        description: "Number of days/quantity of recent workflows to keep:"
         required: true
         type: string
         default: "0"
@@ -25,12 +25,12 @@ jobs:
       contents: read
 
     steps:
-      - name: 检出当前仓库
+      - name: Checkout current repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           
-      - name: 安装GitHub CLI
+      - name: Install GitHub CLI
         run: |
           sudo apt-mark hold firefox
           sudo apt-mark hold libc-bin
@@ -41,46 +41,46 @@ jobs:
           gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
           gh --version
 
-      - name: 按保留数量清理工作流
+      - name: Clean workflows by amount to keep
         if: ${{ github.event.inputs.clean_mode == 'amount' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           repo_full_name=$GITHUB_REPOSITORY
-          # 获取所有工作流（按创建时间倒序）
+          # Get all workflows (in reverse chronological order by creation time)
           all_workflows=$(gh api -X GET "repos/$repo_full_name/actions/runs?per_page=100" | 
             jq --arg current_run "$GITHUB_RUN_ID" '.workflow_runs | map(select(.id != ($current_run | tonumber)))')
-          # 计算实际需要保留的工作流数量
+          # Calculate the actual number of workflows to keep
           total_workflows=$(echo "$all_workflows" | jq length)
           keep_count=$(( ${{ github.event.inputs.clean_to_keep }} < total_workflows ? ${{ github.event.inputs.clean_to_keep }} : total_workflows ))
-          # 获取要保留的最新工作流ID
+          # Get the IDs of the latest workflows to keep
           keep_ids=$(echo "$all_workflows" | 
             jq -r 'sort_by(.created_at) | reverse | .[0:'$keep_count'] | .[].id')
-          echo "保留最近 $keep_count 个工作流 (ID: $keep_ids)"
-          # 删除不在保留列表中的工作流
+          echo "Keeping the latest $keep_count workflows (ID: $keep_ids)"
+          # Delete workflows not in the keep list
           echo "$all_workflows" | jq -r '.[] | select(.status != "in_progress" and .status != "queued") | .id' | while read id; do
             if ! grep -qw "$id" <<< "$keep_ids"; then
-              echo "删除工作流 $id"
+              echo "Deleting workflow $id"
               gh api -X DELETE "repos/$repo_full_name/actions/runs/$id" --silent
             fi
           done
 
 
-      - name: 按保留天数清理工作流
+      - name: Clean workflows by date to keep
         if: ${{ github.event.inputs.clean_mode == 'date'}}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           repo_full_name=$GITHUB_REPOSITORY
           cutoff_date=$(date -d "${{ github.event.inputs.clean_to_keep }} days ago" -u +"%Y-%m-%dT%H:%M:%SZ")
-          echo "删除 $cutoff_date 之前的所有工作流..."
+          echo "Deleting all workflows older than $cutoff_date..."
           
-          # 获取需要删除的工作流ID
+          # Get the IDs of workflows to delete
           to_delete_ids=$(gh api -X GET "repos/$repo_full_name/actions/runs?created=<$cutoff_date&per_page=100" | 
             jq -r --arg current_run "$GITHUB_RUN_ID" '.workflow_runs[] | 
             select(.id != ($current_run | tonumber) and .status != "in_progress" and .status != "queued") | .id')
           
           for id in $to_delete_ids; do
-            echo "删除工作流 $id (创建于 $cutoff_date 之前)"
+            echo "Deleting workflow $id (created before $cutoff_date)"
             gh api -X DELETE "repos/$repo_full_name/actions/runs/$id" --silent
           done
