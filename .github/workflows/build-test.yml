@@ -1,4 +1,4 @@
-name: 发布测试
+name: Release Test
 
 env:
   TZ: Asia/Shanghai
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       lz4k_enable:
-        description: '是否安装 LZ4K 补丁'
+        description: 'Whether to install LZ4K patch'
         required: true
         type: choice
         default: 'true'
@@ -22,7 +22,7 @@ on:
           - 'true'
           - 'false'
       scx_enable:
-        description: '是否安装风驰内核驱动'
+        description: 'Whether to install Fengchi kernel driver'
         required: true
         type: choice
         default: 'true'
@@ -30,7 +30,7 @@ on:
           - 'true'
           - 'false'
       kernel_suffix:
-        description: '自定义内核版本后缀'
+        description: 'Custom kernel version suffix'
         required: false
         type: string
         default: ''
@@ -41,7 +41,7 @@ jobs:
     outputs:
       KSUVER: ${{ steps.ksu_version.outputs.KSUVER }}
     steps:
-      - name: 添加 SukiSU-Ultra 版本号
+      - name: Add SukiSU-Ultra version number
         id: ksu_version
         run: |
           KSU_VERSION="114514"
@@ -57,7 +57,7 @@ jobs:
       actions: read
       
     steps:
-      - name: 设置变量
+      - name: Set variables
         run: |
           if [[ -n "${{ github.event.inputs.kernel_suffix }}" ]]; then
             FULL_VERSION=${{ format('{0}.57-{1}', env.KERNEL_VERSION, github.event.inputs.kernel_suffix) }}
@@ -75,28 +75,28 @@ jobs:
           TAG_HEAD="OPPO+OPlus+Realme-A14-build"
           echo "TAG_HEAD=$TAG_HEAD" >> $GITHUB_ENV
           
-      - name: 创建发布
+      - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: "${{ env.TAG_HEAD }}-${{ env.TIME }}"
           name: "${{ env.TAG_HEAD }}-${{ env.FULL_VERSION }}"
           body: |
-            ### 📱 欧加真 Android 14 SukiSU-Ultra SM8650 通用内核 | 构建信息
-            - 内核版本号: ${{ env.FULL_VERSION }}
-            - 编译时间: ${{ env.TIME_FORM }}
-            - 机型：欧加真骁龙8Gen3 6.1 Android 14内核通用（基于一加12 Android 14 版官方OKI源码）
-            - 特性：SukiSU Ultra + SUSFS + VFS + KPM
-            - LZ4K支持：${{ github.event.inputs.lz4k_enable }}
-            - 风驰内核支持：${{ github.event.inputs.scx_enable }}
-            - 推荐系统：ColorOS 14 / RealmeUI 5.0 (安卓15理论通用，未测试)
-            - SukiSU管理器下载：[SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra/releases)
-            ### ⏫️ 更新内容：
-            - 更新SukiSU Ultra至最新版本（${{ needs.build.outputs.KSUVER }}）
-            - (预留)
-            ### 📋 安装方法 | Installation Guide
-            1. 若你的手机已经安装了第三方Recovery（如TWRP)，可下载对应机型的AnyKernel刷机包后进入Recovery模式，通过Recovery刷入刷机包后重启设备
-            2. 若你的手机之前已有 root 权限，可在手机上安装KernelFlasher，在KernelFlasher中刷入AnyKernel刷机包并重启
-            3. 若你之前已刷入SukiSU Ultra内核，且SukiSU Ultra管理器已更新至最新版本，可在SukiSU Ultra管理器中直接刷入AnyKernel刷机包并重启
+            ### 📱 Oppo/OnePlus/Realme Android 14 SukiSU-Ultra SM8650 Universal Kernel | Build Information
+            - Kernel Version: ${{ env.FULL_VERSION }}
+            - Compilation Time: ${{ env.TIME_FORM }}
+            - Device Model: Oppo/OnePlus/Realme Snapdragon 8 Gen 3 6.1 Android 14 Universal Kernel (based on OnePlus 12 Android 14 official OKI source)
+            - Features: SukiSU Ultra + SUSFS + VFS + KPM
+            - LZ4K Support: ${{ github.event.inputs.lz4k_enable }}
+            - Fengchi Kernel Support: ${{ github.event.inputs.scx_enable }}
+            - Recommended System: ColorOS 14 / RealmeUI 5.0 (Android 15 theoretically compatible, not tested)
+            - SukiSU Manager Download: [SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra/releases)
+            ### ⏫️ Updates:
+            - Updated SukiSU Ultra to the latest version (${{ needs.build.outputs.KSUVER }})
+            - (Reserved)
+            ### 📋 Installation Guide
+            1. If your phone already has a third-party Recovery installed (e.g., TWRP), download the corresponding AnyKernel flashable package for your device. Enter Recovery mode, flash the package through Recovery, and then restart your device.
+            2. If your phone previously had root access, you can install KernelFlasher on your phone. Flash the AnyKernel package in KernelFlasher and restart.
+            3. If you have previously flashed the SukiSU Ultra kernel and the SukiSU Ultra Manager has been updated to the latest version, you can directly flash the AnyKernel package within the SukiSU Ultra Manager and restart.
           draft: false
           prerelease: true
