@@ -1,4 +1,3 @@
-```
 # Oppo, OnePlus, Realme SM8650 Universal Kernel Automated Compilation Script
 [![STAR](https://img.shields.io/github/stars/cctv18/oppo_oplus_realme_sm8650?style=flat&logo=github)](https://github.com/cctv18/oppo_oplus_realme_sm8650/stargazers)
 [![FORK](https://img.shields.io/github/forks/cctv18/oppo_oplus_realme_sm8650?style=flat&logo=greasyfork&color=%2394E61A)](https://github.com/cctv18/oppo_oplus_realme_sm8650/forks)
@@ -59,4 +58,3 @@ Due to limited personal energy, this project currently only provides the SukiSU 
 - GKI Kernel Build Script: [WildKernels/GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
 - ~~Localized Kernel Build Script (deprecated): [Suxiaoqinx/kernel_manifest_OnePlus_Sukisu_Ultra](https://github.com/Suxiaoqinx/kernel_manifest_OnePlus_Sukisu_Ultra)~~
 - ~~Fengchi Kernel Source (incomplete, under modification): [HanKuCha/sched_ext](https://github.com/HanKuCha/sched_ext)~~
-```
